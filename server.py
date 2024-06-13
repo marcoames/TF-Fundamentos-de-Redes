@@ -55,9 +55,6 @@ def main():
         try:
             # Aguarda a recepção de pacotes do cliente
             packet, client_address = server_socket.recvfrom(BUFFER_SIZE)
-            
-            if not packet:
-                continue
 
             # Verifica se o pacote contém o hash MD5 do arquivo recebido
             if packet.startswith(b'MD5'):
@@ -70,29 +67,40 @@ def main():
 
                 # Compara o MD5 recebido com o MD5 calculado
                 if md5_received == file_md5:
-                    print("Arquivo recebido corretamente. MD5 corresponde.")
+                    print(f"{time.time()} Arquivo recebido corretamente. MD5 corresponde.")
                 else:
-                    print("Arquivo recebido incorreto. MD5 não corresponde.")
+                    print(f"{time.time()} Arquivo recebido incorreto. MD5 não corresponde.")
                 break
+
 
             # Extrai o número de sequência, CRC e os dados do pacote
             seq_num, crc_received, data = int(packet[:4].decode()), int(packet[4:14].decode()), packet[14:]
 
+            # Guarda os pacotes recebidos
+            recieved_packets = []
+            
             # Verifica o CRC dos dados
             if calculate_crc(data) != crc_received:
                 print(f"Erro de CRC no pacote {seq_num}. Pacote Descartado.")
-                expected_seq_num += 1
+                time.sleep(1)
                 continue
-            
+            else:
+                recieved_packets.append(seq_num)
+
+
+            print(recieved_packets)
+
             # Verifica se o número de sequência está correto
+            
+            
             if seq_num == expected_seq_num:
                 print(f"Pacote {seq_num} recebido corretamente.")
                 received_data.append(data)
                 expected_seq_num += 1
             else:
                 print(f"Pacote {seq_num} fora de ordem. Esperando pacote {expected_seq_num}.")
-                continue
-
+                expected_seq_num = recieved_packets.pop()
+                
             # Envia um ACK para o cliente
             ack_packet = f"ACK{expected_seq_num}".encode()
             print(f"Enviando ACK {expected_seq_num}")

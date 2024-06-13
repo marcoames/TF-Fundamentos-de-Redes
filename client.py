@@ -11,7 +11,7 @@ SERVER_PORT = 5555
 
 BUFFER_SIZE = 1024
 TIMEOUT = 2  # Timeout para esperar ACKs
-SLOW_START_THRESHOLD = 16  # Threshold para transicao de slow start para congestion avoidance
+SLOW_START_THRESHOLD = 8  # Threshold para transicao de slow start para congestion avoidance
 
 
 # Calcula o hash MD5 dos dados
@@ -61,7 +61,7 @@ def send_file(filename, server_address):
     print(f"\nEnviando arquivo '{filename}' com {num_packets} pacotes...\n")
     while expected_ack < num_packets:
         # Envia o numero de pacotes dentro da janela
-        for i in range(congestion_window):
+        for _ in range(congestion_window):
             if seq_num >= num_packets:
                 break
             
@@ -70,7 +70,7 @@ def send_file(filename, server_address):
             data = file_data[start:end].ljust(10, b'\x00')
             crc = calculate_crc(data)
 
-            # Introduz erro de CRC aleatoriamente
+            #Introduz erro de CRC aleatoriamente
             if random.randint(1, 10) < 2:
                crc = 0
 
@@ -107,7 +107,7 @@ def send_file(filename, server_address):
         except socket.timeout:
             # Em caso de timeout, reinicia o Slow Start
             print(f"---- Timeout. Reiniciando Slow Start. ----")
-            seq_num = expected_ack
+            seq_num = ack_num
             congestion_window = 1 # volta tamanho da janela para 1
     
     # Envia o hash MD5 junto com o último pacote

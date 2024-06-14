@@ -10,7 +10,7 @@ SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 5555
 
 BUFFER_SIZE = 1024
-TIMEOUT = 2  # Timeout para esperar ACKs
+TIMEOUT = 3  # Timeout para esperar ACKs
 SLOW_START_THRESHOLD = 8  # Threshold para transicao de slow start para congestion avoidance
 
 
@@ -39,7 +39,7 @@ def send_file(filename, server_address):
     
     # Dados iniciais do envio
     seq_num = 0
-    expected_ack = 0
+    expected_ack = 1
     congestion_window = 1
     ssthresh = SLOW_START_THRESHOLD
 
@@ -59,9 +59,11 @@ def send_file(filename, server_address):
 
     # Envio dos pacotes
     print(f"\nEnviando arquivo '{filename}' com {num_packets} pacotes...\n")
+
     while expected_ack < num_packets:
         # Envia o numero de pacotes dentro da janela
         for _ in range(congestion_window):
+
             if seq_num >= num_packets:
                 break
             
@@ -72,13 +74,15 @@ def send_file(filename, server_address):
 
             #Introduz erro de CRC aleatoriamente
             if random.randint(1, 10) < 2:
-               crc = 0
+                crc = 0
 
             packet = str(seq_num).zfill(4).encode() + str(crc).zfill(10).encode() + data
 
             client_socket.sendto(packet, server_address)
-            print(f"Enviado pacote {seq_num} com CRC {crc}.")
+            print(f"Enviando pacote {seq_num} com CRC {crc}.")
             seq_num += 1
+
+        time.sleep(1)
 
         try:
             ack_packet, _ = client_socket.recvfrom(BUFFER_SIZE)
@@ -87,9 +91,6 @@ def send_file(filename, server_address):
             if ack_str.startswith("ACK"):
                 ack_num = int(ack_str[3:])
                 print(f"ACK {ack_num} recebido.")
-
-                if ack_num >= expected_ack:
-                    expected_ack = ack_num + 1
 
                 # Fica em Slow Start, duplica tamanho da janela 
                 if congestion_window < ssthresh:

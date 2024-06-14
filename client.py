@@ -125,7 +125,7 @@ def send_file(filename, server_address):
     print(f"\nMD5 calculado do arquivo enviado: {file_md5}")
 
     time.sleep(2)
-
+    print(f"Enviando pacote {num_packets} com MD5")
     client_socket.sendto(md5_packet, server_address)
     print("\nEnvio do arquivo concluído.")
     client_socket.close()

@@ -34,8 +34,11 @@ def main():
     print("Esperando mensagem de conexão...")
     # Aguarda a mensagem de conexão do cliente
     conn_packet, client_address = server_socket.recvfrom(BUFFER_SIZE)
-    if conn_packet == b'CONNECT':
+    if conn_packet.startswith(b'CONNECT'):
         print("Conexão estabelecida.")
+        # Extrai numero de pacotes a serem recebidos
+        num_packets = int(conn_packet[8:])
+        print(f"Número de pacotes a serem recebidos: {num_packets}")
         ack_packet = b'ACK'
         # Envia um ACK para confirmar a conexão
         server_socket.sendto(ack_packet, client_address)
@@ -51,7 +54,7 @@ def main():
 
     # Transferência de dados
     print("\nRecebendo pacotes...\n")
-    while True:
+    while expected_seq_num < num_packets+1:
         try:
             # Aguarda a recepção de pacotes do cliente
             packet, client_address = server_socket.recvfrom(BUFFER_SIZE)
@@ -80,6 +83,7 @@ def main():
             # Verifica o CRC dos dados
             if calculate_crc(data) != crc_received:
                 print(f"Erro de CRC no pacote {seq_num}. Pacote Descartado.")
+                print(f"Enviando ACK {seq_num}")
                 time.sleep(5)
                 continue
 

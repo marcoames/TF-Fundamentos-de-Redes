@@ -41,11 +41,13 @@ def send_file(filename, server_address):
     seq_num = 0
     expected_ack = 1
     congestion_window = 1
+    ack_num = 0
     ssthresh = SLOW_START_THRESHOLD
 
     # Estabelecendo conexão com o servidor
     print("Estabelecendo conexão...")
-    client_socket.sendto(b'CONNECT', server_address)
+    connect_message = f'CONNECT:{num_packets}'.encode()
+    client_socket.sendto(connect_message, server_address)
     try:
         ack_packet, _ = client_socket.recvfrom(BUFFER_SIZE)
         if ack_packet == b'ACK':
@@ -82,7 +84,7 @@ def send_file(filename, server_address):
             print(f"Enviando pacote {seq_num} com CRC {crc}.")
             seq_num += 1
 
-        time.sleep(1)
+        #time.sleep(1)
 
         try:
             ack_packet, _ = client_socket.recvfrom(BUFFER_SIZE)
@@ -111,7 +113,7 @@ def send_file(filename, server_address):
             seq_num = ack_num
             congestion_window = 1 # volta tamanho da janela para 1
     
-    # Envia o hash MD5 junto com o último pacote
+    # Envia o hash MD5 como último pacote
     file_md5 = calculate_md5(file_data)
     md5_packet = b'MD5' + file_md5.encode()
     print(f"\nMD5 calculado do arquivo enviado: {file_md5}")

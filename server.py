@@ -8,7 +8,7 @@ SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 5555
 
 BUFFER_SIZE = 1024
-TIMEOUT = 3  # Timeout para esperar ACKs
+TIMEOUT = 8  # Timeout para esperar ACKs
 
 # Calcula o hash MD5 dos dados recebidos
 def calculate_md5(data):
@@ -107,8 +107,6 @@ def main():
             # Envia um ACK para o cliente
             ack_packet = f"ACK{expected_seq_num}".encode()
             print(f"Enviando ACK {expected_seq_num}")
-
-            #time.sleep(1)
             server_socket.sendto(ack_packet, client_address)
 
         except socket.timeout:

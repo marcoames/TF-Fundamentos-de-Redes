@@ -10,8 +10,8 @@ SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 5555
 
 BUFFER_SIZE = 1024
-TIMEOUT = 3  # Timeout para esperar ACKs
-SLOW_START_THRESHOLD = 8  # Threshold para transicao de slow start para congestion avoidance
+TIMEOUT = 4  # Timeout para esperar ACKs
+SLOW_START_THRESHOLD = 4  # Threshold para transicao de slow start para congestion avoidance
 
 
 # Calcula o hash MD5 dos dados
@@ -66,6 +66,8 @@ def send_file(filename, server_address):
         # Envia o numero de pacotes dentro da janela
         for _ in range(congestion_window):
 
+            time.sleep(1)
+
             if seq_num >= num_packets:
                 break
             
@@ -87,31 +89,35 @@ def send_file(filename, server_address):
         #time.sleep(1)
 
         try:
-            ack_packet, _ = client_socket.recvfrom(BUFFER_SIZE)
-            ack_str = ack_packet.decode()
+            for _ in range(congestion_window):
+                ack_packet, _ = client_socket.recvfrom(BUFFER_SIZE)
+                ack_str = ack_packet.decode()
 
-            if ack_str.startswith("ACK"):
-                ack_num = int(ack_str[3:])
-                print(f"ACK {ack_num} recebido.")
+                if ack_str.startswith("ACK"):
+                    ack_num = int(ack_str[3:])
+                    print(f"ACK {ack_num} recebido.")
 
-                # Fica em Slow Start, duplica tamanho da janela 
-                if congestion_window < ssthresh:
-                    congestion_window *= 2  # Slow Start
-                    print(f"Slow Start: congestion window = {congestion_window}")
-                else:
-                # Troca para Congestion Avoidance, tamanho da janela + 1  
-                    congestion_window += 1  # Congestion Avoidance
-                    print(f"Congestion Avoidance: congestion window = {congestion_window}")
+                    # Fica em Slow Start, duplica tamanho da janela 
+                    if congestion_window < ssthresh:
+                        congestion_window *= 2  # Slow Start
+                        print(f"Slow Start: congestion window = {congestion_window}")
+                    else:
+                    # Troca para Congestion Avoidance, tamanho da janela + 1  
+                        congestion_window += 1  # Congestion Avoidance
+                        print(f"Congestion Avoidance: congestion window = {congestion_window}")
 
-                # Sai do loop se receber um ACK para o próximo pacote inexistente
-                if ack_num >= num_packets:
-                    break  
+            seq_num = ack_num # continua apos ultimo ack
+
+            # Sai do loop se receber um ACK para o próximo pacote inexistente
+            if ack_num >= num_packets:
+                break  
 
         except socket.timeout:
             # Em caso de timeout, reinicia o Slow Start
             print(f"---- Timeout. Reiniciando Slow Start. ----")
             seq_num = ack_num
             congestion_window = 1 # volta tamanho da janela para 1
+            print(f"Slow Start: congestion window = {congestion_window}")
     
     # Envia o hash MD5 como último pacote
     file_md5 = calculate_md5(file_data)

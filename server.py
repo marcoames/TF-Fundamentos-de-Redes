@@ -70,9 +70,9 @@ def main():
 
                 # Compara o MD5 recebido com o MD5 calculado
                 if md5_received == file_md5:
-                    print(f"{time.time()} Arquivo recebido corretamente. MD5 corresponde.")
+                    print("Arquivo recebido corretamente. MD5 corresponde.")
                 else:
-                    print(f"{time.time()} Arquivo recebido incorreto. MD5 não corresponde.")
+                    print("Arquivo recebido incorreto. MD5 não corresponde.")
                 break
 
             # Extrai o número de sequência, CRC e os dados do pacote

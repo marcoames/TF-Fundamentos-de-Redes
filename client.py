@@ -51,7 +51,7 @@ def send_file(filename, server_address):
     try:
         ack_packet, _ = client_socket.recvfrom(BUFFER_SIZE)
         if ack_packet == b'ACK':
-            print("Conexão estabelecida com servidor.")
+            print("Conexão estabelecida.")
         else:
             print("Falha ao estabelecer conexão. Encerrando envio.")
             return

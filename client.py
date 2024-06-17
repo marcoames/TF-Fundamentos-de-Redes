@@ -97,14 +97,14 @@ def send_file(filename, server_address):
                     ack_num = int(ack_str[3:])
                     print(f"ACK {ack_num} recebido.")
 
-                    # Fica em Slow Start, duplica tamanho da janela 
-                    if congestion_window < ssthresh:
-                        congestion_window *= 2  # Slow Start
-                        print(f"Slow Start: congestion window = {congestion_window}")
-                    else:
-                    # Troca para Congestion Avoidance, tamanho da janela + 1  
-                        congestion_window += 1  # Congestion Avoidance
-                        print(f"Congestion Avoidance: congestion window = {congestion_window}")
+            # Fica em Slow Start, duplica tamanho da janela 
+            if congestion_window < ssthresh:
+                congestion_window *= 2  # Slow Start
+                print(f"Slow Start: congestion window = {congestion_window}")
+            else:
+            # Troca para Congestion Avoidance, tamanho da janela + 1  
+                congestion_window += 1  # Congestion Avoidance
+                print(f"Congestion Avoidance: congestion window = {congestion_window}")
 
             seq_num = ack_num # continua apos ultimo ack
 
@@ -124,7 +124,7 @@ def send_file(filename, server_address):
     md5_packet = b'MD5' + file_md5.encode()
     print(f"\nMD5 calculado do arquivo enviado: {file_md5}")
 
-    time.sleep(2)
+    #time.sleep(2)
     print(f"Enviando pacote {num_packets} com MD5")
     client_socket.sendto(md5_packet, server_address)
     print("\nEnvio do arquivo concluído.")
